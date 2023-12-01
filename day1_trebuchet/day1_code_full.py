@@ -5,34 +5,17 @@ digits = ["one", "two", "three", "four", "five", "six", "seven", "eight", "nine"
 
 def solve_line(line: str) -> int:
 	positions = []
-	# so... ehm magic? :D
-	# alright my main idea:
-	# I'll get their positions first, with a list[int, str]
-	# which will basically be list[position, number as str]
-	# this way I won't mess up things like "eightwo"
-	# where two numbers intersect
 	for i, digit in enumerate(digits):
 		if digit in line:
-			# this will get me an iterator
-			# full of re.Match() objects
 			pos_s = re.finditer(digit, line)
-			# pos_s now has all the indexes of the digits
-			# I needed to use this because index() only returns the 1st
-			# and there could be several of each digit
 			for pos in pos_s:
-				# from which I somehow pry out the actual start points
+				# pos.regs[0][0] is starting position
 				positions.append([pos.regs[0][0], str(i + 1)])
 
 	positions.sort(key = lambda x: x[0])
 	for i, pos in enumerate(positions):
-		# here i basically just place in numbers
-		# right at the start of their written out counterparts
-		# so their order doesn't change
+		# +i needed to deal with the string getting pushed
 		line = line[:pos[0] + i] + pos[1] + line[pos[0] + i:]
-		# the +i is needed
-		# because I'm pushing the line forward with each addition
-		# this could be avoided if I go in reverse
-		# however it makes more sense this way
 
 	# from here it's same as part 1
 	left = -1
