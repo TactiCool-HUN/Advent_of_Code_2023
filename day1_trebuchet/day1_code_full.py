@@ -4,9 +4,8 @@ digits = ["one", "two", "three", "four", "five", "six", "seven", "eight", "nine"
 
 
 def solve_line(line: str) -> int:
-	# so... ehm magic? :D
 	positions = []
-
+	# so... ehm magic? :D
 	# alright my main idea:
 	# I'll get their positions first, with a list[int, str]
 	# which will basically be list[position, number as str]
