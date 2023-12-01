@@ -18,6 +18,13 @@ def solve_line(line: str) -> int:
 with open("day1_puzzle_input.txt") as r:
 	calibration_document = r.readlines()
 
+"""calibration_document = [
+	"1abc2",
+	"pqr3stu8vwx",
+	"a1b2c3d4e5f",
+	"treb7uchet"
+]"""
+
 calibration_sum = 0
 for calibration_line in calibration_document:
 	line_number = solve_line(calibration_line)
