@@ -1,6 +1,7 @@
 def solve_line(line: str) -> int:
 	left = -1
 	right = -1
+
 	for letter in line:
 		if letter.isnumeric():
 			left = letter
@@ -16,10 +17,10 @@ def solve_line(line: str) -> int:
 
 with open("day1_puzzle_input.txt") as r:
 	calibration_document = r.readlines()
-	
-calibration_values = []
-for calibration_line in calibration_document:
-	calibration_number = solve_line(calibration_line)
-	calibration_values.append(calibration_number)
 
-print(sum(calibration_values))
+calibration_sum = 0
+for calibration_line in calibration_document:
+	line_number = solve_line(calibration_line)
+	calibration_sum += line_number
+
+print(calibration_sum)
