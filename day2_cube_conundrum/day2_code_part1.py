@@ -9,7 +9,7 @@ with open("day2_puzzle_input.txt", "r") as f:
 	"Game 5: 6 red, 1 blue, 3 green; 2 blue, 1 red, 2 green"
 ]"""
 
-game_ids: list[int] = []
+game_ids = 0
 
 for game in test_games:
 	game = game[5:]
@@ -39,6 +39,6 @@ for game in test_games:
 		elif show["blue"] > 14:
 			break
 	else:
-		game_ids.append(game_id)
+		game_ids += game_id
 
-print(sum(game_ids))
+print(game_ids)

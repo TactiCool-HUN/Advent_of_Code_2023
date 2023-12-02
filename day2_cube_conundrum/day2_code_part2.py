@@ -9,7 +9,7 @@ with open("day2_puzzle_input.txt", "r") as f:
 	"Game 5: 6 red, 1 blue, 3 green; 2 blue, 1 red, 2 green"
 ]"""
 
-game_powers: list[int] = []
+game_powers = 0
 
 for game in test_games:
 	game = game[5:]
@@ -41,6 +41,6 @@ for game in test_games:
 			if show[key] > least_of_color[key]:
 				least_of_color[key] = show[key]
 
-	game_powers.append(least_of_color["red"] * least_of_color["green"] * least_of_color["blue"])
+	game_powers += least_of_color["red"] * least_of_color["green"] * least_of_color["blue"]
 
-print(sum(game_powers))
+print(game_powers)
