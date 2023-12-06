@@ -37,13 +37,58 @@ with open("day5_puzzle_input.txt", "r") as f:
 	"56 93 4"
 ]"""
 
-seeds = almanach[0].split(": ")[1]
-seeds = [int(i) for i in seeds.split(" ")]
-seeds = [[seeds[i], seeds[i] + seeds[i + 1]] for i in range(len(seeds)) if i % 2 == 0]
 
-instructions: list[list[list[int]]] = []
+class Range:
+	def __init__(self, start: int, length: int):
+		if length < 1:
+			raise ValueError("Negative Length")
+		elif start < 0:
+			raise ValueError("Negative Start")
+		self.start = start
+		self.end = start + length - 1
+
+	def __contains__(self, item: int):
+		return self.start <= item <= self.end
+
+	def __len__(self):
+		return self.end - self.start + 1
+
+	def __add__(self, other: int):
+		start = self.start + other
+		end = self.end + other
+		return Range(start, end - start + 1)
+
+	def split(self, point: int, point_to: str):  # point_to: "left"||"right"
+		if self.start == point:
+			if point_to == "right":
+				return None, self
+			else:
+				return self, None
+		elif self.end == point:
+			if point_to == "right":
+				return None, self
+			else:
+				return self, None
+		elif point in self:
+			if point_to == "right":
+				return Range(self.start, point - self.start), Range(point, self.end - point + 1)
+			else:
+				return Range(self.start, point - self.start + 1), Range(point + 1, self.end - point + 1)
+		else:
+			if point_to == "right":
+				return None, self
+			else:
+				return self, None
+
+
+temp = almanach[0].split(": ")[1]
+temp = [int(i) for i in temp.split(" ")]
+seeds: list[Range] = [Range(temp[i], temp[i + 1]) for i in range(len(temp)) if i % 2 == 0]
+
+instructions: list[list[dict]] = []
 temp = []
-for line in almanach[2:]:
+for i, line in enumerate(almanach[2:]):
+	print(i + 2)
 	line = line.strip()
 	if line == "":
 		instructions.append(temp)
@@ -52,51 +97,83 @@ for line in almanach[2:]:
 	elif not line[0].isdigit():
 		continue
 
-	temp.append([int(i) for i in line.split(" ")])
+	temp.append({
+		"in": Range(int(line.split(" ")[1]), int(line.split(" ")[2])),
+		"out": Range(int(line.split(" ")[0]), int(line.split(" ")[2])),
+		"move": int(line.split(" ")[0]) - int(line.split(" ")[1])
+	})
 instructions.append(temp)
 
-for instruction_map in instructions:
+for i, instruction_set in enumerate(instructions):
+	print(f"- - - - - Instructions {i + 1}/{len(instructions)} - - - - -")
 	new_seeds = []
-	for seed_range in seeds:
-		for instruction_range in instruction_map:
-			if seed_range[0] <= instruction_range[1] <= seed_range[1] < (instruction_range[1] + instruction_range[2]):
+	while seeds:
+		print(f"Seed count: {len(seeds)}")
+		seed_range = seeds.pop(0)
+		print(f"Checking Seed {seed_range.start} - {seed_range.end}")
+		for j, instruction_dict in enumerate(instruction_set):
+			print(f"- Instruction dict {j + 1}/{len(instruction_set)}")
+			print(f"- Against {instruction_dict['in'].start} - {instruction_dict['in'].end}, which moves {instruction_dict['move']}")
+			if instruction_dict["in"].start in seed_range and instruction_dict["in"].end not in seed_range:
 				# instruction range starts within seed range but ends outside
-				new_seeds.append([seed_range[0], instruction_range[1] - 1])  # unchanging range
-				temp = [instruction_range[1], seed_range[1]]  # changing range
+				print("- - Found at 1")
+				unchanging, changing = seed_range.split(instruction_dict["in"].start, "right")
 
-				temp = [i - instruction_range[1] + instruction_range[0] for i in temp]  # applying change
-				new_seeds.append(temp)
+				if changing is None:
+					raise ValueError
+				else:
+					changing += instruction_dict["move"]
+					new_seeds.append(changing)
+				if unchanging is not None:
+					seeds.append(unchanging)
 				break
-			elif instruction_range[1] < seed_range[0] <= (instruction_range[1] + instruction_range[2]) <= seed_range[1]:
+			elif seed_range.start in instruction_dict["in"] and seed_range.end not in instruction_dict["in"]:
 				# seed range starts within instruction range but ends outside
-				temp = [seed_range[0], instruction_range[1] + instruction_range[2]]  # changing range
-				new_seeds.append([instruction_range[1] + instruction_range[2] + 1, seed_range[1]])  # unchanging range
+				print("- - Found at 2")
+				changing, unchanging = seed_range.split(instruction_dict["in"].end, "left")
 
-				temp = [i - instruction_range[1] + instruction_range[0] for i in temp]  # applying change
-				new_seeds.append(temp)
+				if changing is None:
+					raise ValueError
+				else:
+					changing += instruction_dict["move"]
+					new_seeds.append(changing)
+				if unchanging is not None:
+					seeds.append(unchanging)
 				break
-			elif seed_range[0] <= instruction_range[1] and instruction_range[1] + instruction_range[2] <= seed_range[1]:
+			elif instruction_dict["in"].start in seed_range and instruction_dict["in"].end in seed_range:
 				# instruction range completely within seed range
-				new_seeds.append([seed_range[0], instruction_range[1] - 1])  # unchanging range
-				temp = [instruction_range[1], instruction_range[1] + instruction_range[2]]  # changing range
-				new_seeds.append([instruction_range[1] + instruction_range[2] + 1, seed_range[1]])  # unchanging range
+				print("- - Found at 3")
+				unchanging1, temp = seed_range.split(instruction_dict["in"].start, "right")
 
-				temp = [i - instruction_range[1] + instruction_range[0] for i in temp]  # applying change
-				new_seeds.append(temp)
+				changing, unchanging2 = temp.split(instruction_dict["in"].end, "left")
+
+				if changing is None:
+					raise ValueError
+				else:
+					print(f"{changing.start} - {changing.end}")
+					changing += instruction_dict["move"]
+					new_seeds.append(changing)
+				if unchanging1 is not None:
+					seeds.append(unchanging1)
+				if unchanging2 is not None:
+					seeds.append(unchanging2)
 				break
-			elif instruction_range[1] < seed_range[0] and seed_range[1] < instruction_range[1] + instruction_range[2]:
+			elif seed_range.start in instruction_dict["in"] and seed_range.end in instruction_dict["in"]:
 				# seed range completely within instruction range
 				# everything changes
-				temp = [i - instruction_range[1] + instruction_range[0] for i in seed_range]  # applying change
-				new_seeds.append(temp)
+				print("- - Found at 4")
+				changing = seed_range + instruction_dict["move"]
+
+				new_seeds.append(changing)
 				break
 		else:
+			print("- - Unchanged")
 			new_seeds.append(seed_range)
 	seeds = new_seeds
 
-lowest = seeds[0][0]
-for seed_range in seeds:
-	if seed_range[0] < lowest:
-		lowest = seed_range[0]
+lowest = seeds[0].start
+for seed in seeds:
+	if seed.start < lowest:
+		lowest = seed.start
 
 print(lowest)
