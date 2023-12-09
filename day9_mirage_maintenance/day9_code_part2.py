@@ -1,5 +1,5 @@
 def create_history(reading: list[list[int]]) -> list[list[int]]:
-	while not all(i == 0 for i in reading[-1]):
+	while any(i != 0 for i in reading[-1]):
 		last_reading: list[int] = reading[-1]
 		new_history = []
 
